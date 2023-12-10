@@ -14,7 +14,7 @@ public class Menu {
     public static void main(String[] args) {
         final JFrame frame = new JFrame("Menu");
 
-        frame.setSize(500, 350);
+        frame.setSize(500, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JMenuBar menuBar = new JMenuBar();
@@ -89,7 +89,7 @@ public class Menu {
         });
 
         JPanel panel = new JPanel();
-        panel.add(new JLabel("Enter Encryption/Decryption Key: (Current key: " + userKey + ")"));
+        panel.add(new JLabel("Enter Encryption/Decryption Key(Current key - " + userKey + "):"));
         panel.add(keyField);
 
         int result = JOptionPane.showConfirmDialog(frame, panel, "Settings", JOptionPane.OK_CANCEL_OPTION);
@@ -100,8 +100,10 @@ public class Menu {
                 userKey = userInput;
                 JOptionPane.showMessageDialog(frame, "Key saved: " + userKey);
             } else {
-                JOptionPane.showMessageDialog(frame, "Key not saved.");
+                JOptionPane.showMessageDialog(frame, "Key cannot be empty.");
             }
+        } else {
+            JOptionPane.showMessageDialog(frame, "Key was not saved.");
         }
     }
 
@@ -154,130 +156,133 @@ public class Menu {
                 }*/
 
                 // check if the entered key matches the saved key
-                if (!encryptionKeyField.getText().equals(savedKey)) {
+                if (savedKey.isBlank()) {
+                    JOptionPane.showMessageDialog(frame, "Encryption key is empty. Please check your settings.");
+                    return;
+                } else if (!encryptionKeyField.getText().equals(savedKey)) {
                     JOptionPane.showMessageDialog(frame, "Incorrect encryption key. Please check your settings.");
                     return;
                 }
 
-                String message = messageTextArea.getText().toUpperCase(); // Convert message to uppercase
-                String key = encryptionKeyField.getText().toLowerCase(); // Convert key to lowercase
 
-                // convert the encryption key to an array of integers
-                List<Integer> keyList = new ArrayList<>();
+                if (messageTextArea.getText().isBlank()) {
+                    JOptionPane.showMessageDialog(frame, "Message cannot be empty.");
+                } else {
+                    String message = messageTextArea.getText().toUpperCase(); // Convert message to uppercase
+                    String key = encryptionKeyField.getText().toLowerCase(); // Convert key to lowercase
 
-                for (int i = 0; i < key.length(); i++) {
-                    char keyChar = key.charAt(i);
+                    // convert the encryption key to an array of integers
+                    List<Integer> keyList = new ArrayList<>();
 
-                    if (Character.isLetter(keyChar)) {
-                        int charValue = Character.toUpperCase(keyChar) - 'A' + 1;
-                        int digit = charValue;
+                    for (int i = 0; i < key.length(); i++) {
+                        char keyChar = key.charAt(i);
 
-                        // Temporary list to store digits in reverse order
-                        List<Integer> tempKeyList = new ArrayList<>();
+                        if (Character.isLetter(keyChar)) {
+                            int charValue = Character.toUpperCase(keyChar) - 'A' + 1;
+                            int digit = charValue;
 
-                        // Split multi-digit numbers into separate digits
-                        while (digit > 0) {
-                            tempKeyList.add(0, digit % 10);  // Prepend each digit to the temporary list
-                            digit /= 10;
+                            // Temporary list to store digits in reverse order
+                            List<Integer> tempKeyList = new ArrayList<>();
+
+                            // Split multi-digit numbers into separate digits
+                            while (digit > 0) {
+                                tempKeyList.add(0, digit % 10);  // Prepend each digit to the temporary list
+                                digit /= 10;
+                            }
+
+                            // Add digits to the main keyList in the correct order
+                            keyList.addAll(tempKeyList);
+                            // System.out.println(keyList); //print code to check keylist
+
+                            //keyList.add(charValue);
+                        } else if (Character.isDigit(keyChar)) { //placeholder code for how to handle numbers in the key
+                            int digit = Character.getNumericValue(keyChar);
+                            // Split multi-digit numbers into separate digits
+                            while (digit > 0) {
+                                keyList.add(digit % 10);
+                                digit /= 10;
+                            }
                         }
+                    }
 
-                        // Add digits to the main keyList in the correct order
-                        keyList.addAll(tempKeyList);
-                        // System.out.println(keyList); //print code to check keylist
+                    // Convert the list to an array
+                    int[] keyArray = keyList.stream().mapToInt(Integer::intValue).toArray();
 
-                        //keyList.add(charValue);
-                    } else if (Character.isDigit(keyChar)) { //placeholder code for how to handle numbers in the key
-                        int digit = Character.getNumericValue(keyChar);
-                        // Split multi-digit numbers into separate digits
-                        while (digit > 0) {
-                            keyList.add(digit % 10);
-                            digit /= 10;
+
+                    // encrypt the message
+                    StringBuilder encryptedMessage = new StringBuilder();
+                    int keyIndex = 0;
+
+                    for (int i = 0; i < message.length(); i++) {
+                        char currentChar = message.charAt(i);
+                        if (Character.isLetter(currentChar)) {
+                            int charValue = currentChar - 'A' + 1;
+                            int keyDigit = keyArray[keyIndex % keyArray.length];
+
+                            // calculate encrypted value
+                            int encryptedValue = (charValue + keyDigit - 1) % 26 + 1;
+
+                            char encryptedChar = (char) (encryptedValue + 'A' - 1);
+                            encryptedMessage.append(encryptedChar);
+
+                            keyIndex++;
+                        } else {
+                            // Non-alphabetic characters remain unchanged (placeholder)
+                            encryptedMessage.append(currentChar);
                         }
                     }
-                }
-
-                // Convert the list to an array
-                int[] keyArray = keyList.stream().mapToInt(Integer::intValue).toArray();
 
 
+                    // display the encrypted result in the result area without spaces
+                    String encryptedResult = encryptedMessage.toString().replace(" ", "");
 
+                    // display the encrypted result without spaces on the first line
+                    resultTextArea.setText(encryptedResult.replace(" ", "") + "\n");
+                    resultTextArea.append("\n"); // add a new line
 
-                // encrypt the message
-                StringBuilder encryptedMessage = new StringBuilder();
-                int keyIndex = 0;
+                    // group the result based on the string length of the encryption key
+                    int keyLength = key.length();
+                    StringBuilder groupedResult = new StringBuilder();
+                    int charCount = 0;
 
-                for (int i = 0; i < message.length(); i++) {
-                    char currentChar = message.charAt(i);
-                    if (Character.isLetter(currentChar)) {
-                        int charValue = currentChar - 'A' + 1;
-                        int keyDigit = keyArray[keyIndex % keyArray.length];
+                    for (char c : encryptedResult.toCharArray()) {
+                        groupedResult.append(c);
+                        charCount++;
 
-                        // calculate encrypted value
-                        int encryptedValue = (charValue + keyDigit - 1) % 26 + 1;
-
-                        char encryptedChar = (char) (encryptedValue + 'A' - 1);
-                        encryptedMessage.append(encryptedChar);
-
-                        keyIndex++;
-                    } else {
-                        // Non-alphabetic characters remain unchanged (placeholder)
-                        encryptedMessage.append(currentChar);
+                        // insert a space after each group of characters equal to the key length
+                        if (charCount == keyLength) {
+                            groupedResult.append(" ");
+                            charCount = 0;
+                        }
                     }
-                }
 
-
-                // display the encrypted result in the result area without spaces
-                String encryptedResult = encryptedMessage.toString().replace(" ", "");
-
-                // display the encrypted result without spaces on the first line
-                resultTextArea.setText(encryptedResult.replace(" ", "") + "\n");
-                resultTextArea.append("\n"); // add a new line
-
-                // group the result based on the string length of the encryption key
-                int keyLength = key.length();
-                StringBuilder groupedResult = new StringBuilder();
-                int charCount = 0;
-
-                for (char c : encryptedResult.toCharArray()) {
-                    groupedResult.append(c);
-                    charCount++;
-
-                    // insert a space after each group of characters equal to the key length
-                    if (charCount == keyLength) {
-                        groupedResult.append(" ");
-                        charCount = 0;
+                    // if the last group is lacking characters, insert '0' to complete it
+                    while (charCount != 0 && charCount < keyLength) {
+                        groupedResult.append("0");
+                        charCount++;
                     }
+
+                    resultTextArea.append(groupedResult.toString().trim());
+                    resultTextArea.append("\n\n"); // add a new line
+
+                    // reverse each group of characters separately
+                    String[] groups = groupedResult.toString().trim().split(" ");
+                    StringBuilder reversedGroups = new StringBuilder();
+
+                    for (String group : groups) {
+                        StringBuilder reversedGroup = new StringBuilder(group).reverse();
+                        reversedGroups.append(reversedGroup).append(" ");
+                    }
+
+                    resultTextArea.append(reversedGroups.toString().trim());
+                    resultTextArea.append("\n\n"); // add a new line
+
+                    // remove spaces between reversed groups
+                    String finalResult = reversedGroups.toString().replace(" ", "");
+                    resultTextArea.append(finalResult);
+
+
                 }
-
-                // if the last group is lacking characters, insert '0' to complete it
-                while (charCount != 0 && charCount < keyLength) {
-                    groupedResult.append("0");
-                    charCount++;
-                }
-
-                resultTextArea.append(groupedResult.toString().trim());
-                resultTextArea.append("\n\n"); // add a new line
-
-                // reverse each group of characters separately
-                String[] groups = groupedResult.toString().trim().split(" ");
-                StringBuilder reversedGroups = new StringBuilder();
-
-                for (String group : groups) {
-                    StringBuilder reversedGroup = new StringBuilder(group).reverse();
-                    reversedGroups.append(reversedGroup).append(" ");
-                }
-
-                resultTextArea.append(reversedGroups.toString().trim());
-                resultTextArea.append("\n\n"); // add a new line
-
-                // remove spaces between reversed groups
-                String finalResult = reversedGroups.toString().replace(" ", "");
-                resultTextArea.append(finalResult);
-
-
-
-
-
             }
         });
 
@@ -303,26 +308,40 @@ public class Menu {
         });
 
 
+        // Set the layout constraints for resizing and padding
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.insets = new Insets(10, 20, 0, 5); // Set padding (top, left, bottom, right)
+
+        // Add components to the main panel
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
+
+        gbc.weighty= 0.0;
         mainPanel.add(new JLabel("Message"), gbc);
 
         gbc.gridy++;
         gbc.gridheight = 2;
+        gbc.weighty = 1.0;
         mainPanel.add(new JScrollPane(messageTextArea), gbc);
 
         gbc.gridx = 0;
         gbc.gridy += 2;
         gbc.gridheight = 1;
         gbc.gridwidth = 1;
-        mainPanel.add(new JLabel("Encryption Key"), gbc);
+        gbc.weighty= 0.0;
+        mainPanel.add(new JLabel("Decryption Key"), gbc);
 
         gbc.gridy++;
         mainPanel.add(encryptionKeyField, gbc);
 
         gbc.gridy++;
+        gbc.insets = new Insets(5, 20, 20, 5); // Set padding (top, left, bottom, right)
         mainPanel.add(encryptButton, gbc);
+
+        gbc.insets = new Insets(10, 5, 0, 20); // Set padding (top, left, bottom, right)
 
         gbc.gridx += 2;
         gbc.gridy = 0;
@@ -330,10 +349,13 @@ public class Menu {
         mainPanel.add(new JLabel("Result"), gbc);
 
         gbc.gridy++;
+        gbc.weighty= 1.0;
         mainPanel.add(new JScrollPane(resultTextArea), gbc);
 
+        // Set up the window
         frame.getContentPane().removeAll();
         frame.add(mainPanel);
+        frame.setLocationRelativeTo(null);
         frame.revalidate();
         frame.repaint();
     }
@@ -386,116 +408,119 @@ public class Menu {
                     return;
                 }*/
 
-                // check if the entered key matches the saved key
-                if (!decryptionKeyField.getText().equals(savedKey)) {
+                // check if the entered key matches the saved key or is empty
+                if (savedKey.isBlank()) {
+                    JOptionPane.showMessageDialog(frame, "Decryption key is empty. Please check your settings.");
+                    return;
+                } else if (!decryptionKeyField.getText().equals(savedKey)) {
                     JOptionPane.showMessageDialog(frame, "Incorrect decryption key. Please check your settings.");
                     return;
                 }
 
-                String message = messageTextArea.getText().toUpperCase(); // Convert message to uppercase
-                String key = decryptionKeyField.getText().toLowerCase(); // Convert key to lowercase
 
-                // convert the decryption key to an array of integers
-                List<Integer> keyList = new ArrayList<>();
+                if (messageTextArea.getText().isBlank()) {
+                    JOptionPane.showMessageDialog(frame, "Message cannot be empty.");
+                } else {
+                    String message = messageTextArea.getText().toUpperCase(); // Convert message to uppercase
+                    String key = decryptionKeyField.getText().toLowerCase(); // Convert key to lowercase
 
-                for (int i = 0; i < key.length(); i++) {
-                    char keyChar = key.charAt(i);
+                    // convert the decryption key to an array of integers
+                    List<Integer> keyList = new ArrayList<>();
 
-                    if (Character.isLetter(keyChar)) {
-                        int charValue = Character.toUpperCase(keyChar) - 'A' + 1;
-                        int digit = charValue;
+                    for (int i = 0; i < key.length(); i++) {
+                        char keyChar = key.charAt(i);
 
-                        // Temporary list to store digits in reverse order
-                        List<Integer> tempKeyList = new ArrayList<>();
+                        if (Character.isLetter(keyChar)) {
+                            int charValue = Character.toUpperCase(keyChar) - 'A' + 1;
+                            int digit = charValue;
 
-                        // Split multi-digit numbers into separate digits
-                        while (digit > 0) {
-                            tempKeyList.add(0, digit % 10);  // Prepend each digit to the temporary list
-                            digit /= 10;
+                            // Temporary list to store digits in reverse order
+                            List<Integer> tempKeyList = new ArrayList<>();
+
+                            // Split multi-digit numbers into separate digits
+                            while (digit > 0) {
+                                tempKeyList.add(0, digit % 10);  // Prepend each digit to the temporary list
+                                digit /= 10;
+                            }
+
+                            // Add digits to the main keyList in the correct order
+                            keyList.addAll(tempKeyList);
+                            // System.out.println(keyList); //print code to check keylist
+
+                            //keyList.add(charValue);
+                        } else if (Character.isDigit(keyChar)) { //placeholder code for how to handle numbers in the key
+                            int digit = Character.getNumericValue(keyChar);
+                            // Split multi-digit numbers into separate digits
+                            while (digit > 0) {
+                                keyList.add(digit % 10);
+                                digit /= 10;
+                            }
                         }
+                    }
 
-                        // Add digits to the main keyList in the correct order
-                        keyList.addAll(tempKeyList);
-                        // System.out.println(keyList); //print code to check keylist
+                    // Convert the list to an array
+                    int[] keyArray = keyList.stream().mapToInt(Integer::intValue).toArray();
 
-                        //keyList.add(charValue);
-                    } else if (Character.isDigit(keyChar)) { //placeholder code for how to handle numbers in the key
-                        int digit = Character.getNumericValue(keyChar);
-                        // Split multi-digit numbers into separate digits
-                        while (digit > 0) {
-                            keyList.add(digit % 10);
-                            digit /= 10;
+
+                    // group the result based on the string length of the encryption key
+                    int keyLength = key.length();
+                    StringBuilder groupedResult = new StringBuilder();
+                    int charCount = 0;
+
+                    for (char c : message.toCharArray()) {
+                        groupedResult.append(c);
+                        charCount++;
+
+                        // insert a space after each group of characters equal to the key length
+                        if (charCount == keyLength) {
+                            groupedResult.append(" ");
+                            charCount = 0;
                         }
                     }
-                }
 
-                // Convert the list to an array
-                int[] keyArray = keyList.stream().mapToInt(Integer::intValue).toArray();
+                    // reverse each group of characters separately
+                    String[] groups = groupedResult.toString().trim().split(" ");
+                    StringBuilder reversedGroups = new StringBuilder();
 
-
-
-                // group the result based on the string length of the encryption key
-                int keyLength = key.length();
-                StringBuilder groupedResult = new StringBuilder();
-                int charCount = 0;
-
-                for (char c : message.toCharArray()) {
-                    groupedResult.append(c);
-                    charCount++;
-
-                    // insert a space after each group of characters equal to the key length
-                    if (charCount == keyLength) {
-                        groupedResult.append(" ");
-                        charCount = 0;
+                    for (String group : groups) {
+                        StringBuilder reversedGroup = new StringBuilder(group).reverse();
+                        reversedGroups.append(reversedGroup).append(" ");
                     }
-                }
 
-                // reverse each group of characters separately
-                String[] groups = groupedResult.toString().trim().split(" ");
-                StringBuilder reversedGroups = new StringBuilder();
-
-                for (String group : groups) {
-                    StringBuilder reversedGroup = new StringBuilder(group).reverse();
-                    reversedGroups.append(reversedGroup).append(" ");
-                }
-
-                String finalResult = reversedGroups.toString().replace(" ", "");
+                    String finalResult = reversedGroups.toString().replace(" ", "");
 
 
-                // Decrypt the message using the key
-                StringBuilder decryptedMessage = new StringBuilder();
-                int keyIndex = 0;
+                    // Decrypt the message using the key
+                    StringBuilder decryptedMessage = new StringBuilder();
+                    int keyIndex = 0;
 
-                for (int i = 0; i < finalResult.length(); i++) {
-                    char currentChar = finalResult.charAt(i);
-                    if (Character.isLetter(currentChar)) {
-                        int charValue = currentChar - 'A' + 1;
-                        int keyDigit = keyArray[keyIndex % keyArray.length];
+                    for (int i = 0; i < finalResult.length(); i++) {
+                        char currentChar = finalResult.charAt(i);
+                        if (Character.isLetter(currentChar)) {
+                            int charValue = currentChar - 'A' + 1;
+                            int keyDigit = keyArray[keyIndex % keyArray.length];
 
-                        // calculate decrypted value
-                        int decryptedValue = (charValue - keyDigit + 26) % 26;
+                            // calculate decrypted value
+                            int decryptedValue = (charValue - keyDigit + 26) % 26;
 
-                        char decryptedChar = (char) (decryptedValue + 'A' - 1);
-                        resultTextArea.append(currentChar + " - " + keyDigit + " = " + decryptedChar + "\n");
-                        decryptedMessage.append(decryptedChar);
+                            char decryptedChar = (char) (decryptedValue + 'A' - 1);
+                            resultTextArea.append(currentChar + " - " + keyDigit + " = " + decryptedChar + "\n");
+                            decryptedMessage.append(decryptedChar);
 
-                        keyIndex++;
-                    } else {
-                        // Non-alphabetic characters remain unchanged (placeholder)
-                        decryptedMessage.append(currentChar);
+                            keyIndex++;
+                        } else {
+                            // Non-alphabetic characters remain unchanged (placeholder)
+                            decryptedMessage.append(currentChar);
+                        }
                     }
+
+                    String decryptedFinal = decryptedMessage.toString().replaceAll("0*$", "");
+
+                    // Display the decrypted result
+                    resultTextArea.append("\n\n" + decryptedFinal);
+
+
                 }
-
-                String decryptedFinal = decryptedMessage.toString().replaceAll("0*$", "");
-
-                // Display the decrypted result
-                resultTextArea.append("\n\n" + decryptedFinal);
-
-
-
-
-
-
             }
         });
 
@@ -521,26 +546,40 @@ public class Menu {
         });
 
 
+        // Set the layout constraints for resizing and padding
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.insets = new Insets(10, 20, 0, 5); // Set padding (top, left, bottom, right)
+
+        // Add components to the main panel
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
+
+        gbc.weighty= 0.0;
         mainPanel.add(new JLabel("Message"), gbc);
 
         gbc.gridy++;
         gbc.gridheight = 2;
+        gbc.weighty = 1.0;
         mainPanel.add(new JScrollPane(messageTextArea), gbc);
 
         gbc.gridx = 0;
         gbc.gridy += 2;
         gbc.gridheight = 1;
         gbc.gridwidth = 1;
+        gbc.weighty= 0.0;
         mainPanel.add(new JLabel("Decryption Key"), gbc);
 
         gbc.gridy++;
         mainPanel.add(decryptionKeyField, gbc);
 
         gbc.gridy++;
+        gbc.insets = new Insets(5, 20, 20, 5); // Set padding (top, left, bottom, right)
         mainPanel.add(decryptButton, gbc);
+
+        gbc.insets = new Insets(10, 5, 0, 20); // Set padding (top, left, bottom, right)
 
         gbc.gridx += 2;
         gbc.gridy = 0;
@@ -548,12 +587,16 @@ public class Menu {
         mainPanel.add(new JLabel("Result"), gbc);
 
         gbc.gridy++;
+        gbc.weighty= 1.0;
         mainPanel.add(new JScrollPane(resultTextArea), gbc);
 
+        // Set up the window
         frame.getContentPane().removeAll();
         frame.add(mainPanel);
+        frame.setLocationRelativeTo(null);
         frame.revalidate();
         frame.repaint();
+
     }
 
 
