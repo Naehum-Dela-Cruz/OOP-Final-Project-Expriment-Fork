@@ -266,14 +266,6 @@ public class Menu {
         frame.repaint();
     }
 
-    // Helper method to reverse and append characters in a StringBuilder
-    private static void reverseAndAppend(StringBuilder sb) {
-        int length = sb.length();
-        for (int i = length - 1; i >= 0; i--) {
-            resultTextArea.append(String.valueOf(sb.charAt(i)));  // Convert char to String
-        }
-        sb.setLength(0); // Clear the StringBuilder for the next group
-    }
 
 
 }
