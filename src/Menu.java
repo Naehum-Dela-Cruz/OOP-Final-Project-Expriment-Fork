@@ -201,7 +201,24 @@ public class Menu {
                 }
 
                 resultTextArea.append(groupedResult.toString().trim());
-                resultTextArea.append("\n"); // add a new line
+                resultTextArea.append("\n\n"); // add a new line
+
+                // reverse each group of characters separately
+                String[] groups = groupedResult.toString().trim().split(" ");
+                StringBuilder reversedGroups = new StringBuilder();
+
+                for (String group : groups) {
+                    StringBuilder reversedGroup = new StringBuilder(group).reverse();
+                    reversedGroups.append(reversedGroup).append(" ");
+                }
+
+                resultTextArea.append(reversedGroups.toString().trim());
+                resultTextArea.append("\n\n"); // add a new line
+
+                // remove spaces between reversed groups
+                String finalResult = reversedGroups.toString().replace(" ", "");
+                resultTextArea.append(finalResult);
+
 
 
 
