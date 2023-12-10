@@ -2,9 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Menu {
     private static String encryptionKey = "";
+    private static JTextArea resultTextArea;
 
     public static void main(String[] args) {
         final JFrame frame = new JFrame("Menu");
@@ -79,7 +82,7 @@ public class Menu {
         GridBagConstraints gbc = new GridBagConstraints();
 
         JTextArea messageTextArea = new JTextArea(10, 20);
-        JTextArea resultTextArea = new JTextArea(10, 20);
+       resultTextArea = new JTextArea(10, 20);
         JTextField encryptionKeyField = new JTextField(20);
         JButton encryptButton = new JButton("Encrypt");
 
@@ -105,17 +108,42 @@ public class Menu {
                 String key = encryptionKeyField.getText().toLowerCase(); // Convert key to lowercase
 
                 // convert the encryption key to an array of integers
-                int[] keyArray = new int[key.length()];
+                List<Integer> keyList = new ArrayList<>();
+
                 for (int i = 0; i < key.length(); i++) {
                     char keyChar = key.charAt(i);
+
                     if (Character.isLetter(keyChar)) {
-                        keyArray[i] = Character.toUpperCase(keyChar) - 'A' + 1;
-                        System.out.println(keyArray[i] + "\n");
-                    } else {
-                        // handle non-letter characters (e.g., digits)
-                        keyArray[i] = Character.getNumericValue(keyChar);
+                        int charValue = Character.toUpperCase(keyChar) - 'A' + 1;
+                        int digit = charValue;
+
+                        // Temporary list to store digits in reverse order
+                        List<Integer> tempKeyList = new ArrayList<>();
+
+                        // Split multi-digit numbers into separate digits
+                        while (digit > 0) {
+                            tempKeyList.add(0, digit % 10);  // Prepend each digit to the temporary list
+                            digit /= 10;
+                        }
+
+                        // Add digits to the main keyList in the correct order
+                        keyList.addAll(tempKeyList);
+                        // System.out.println(keyList); //print code to check keylist
+
+                        //keyList.add(charValue);
+                    } else if (Character.isDigit(keyChar)) { //placeholder code for how to handle numbers in the key
+                        int digit = Character.getNumericValue(keyChar);
+                        // Split multi-digit numbers into separate digits
+                        while (digit > 0) {
+                            keyList.add(digit % 10);
+                            digit /= 10;
+                        }
                     }
                 }
+
+                // Convert the list to an array
+                int[] keyArray = keyList.stream().mapToInt(Integer::intValue).toArray();
+
 
 
 
@@ -137,14 +165,47 @@ public class Menu {
 
                         keyIndex++;
                     } else {
-                        // Non-alphabetic characters remain unchanged
+                        // Non-alphabetic characters remain unchanged (placeholder)
                         encryptedMessage.append(currentChar);
                     }
                 }
 
 
-                // Display the encrypted result in the result area
-                resultTextArea.setText(encryptedMessage.toString());
+                // display the encrypted result in the result area without spaces
+                String encryptedResult = encryptedMessage.toString().replace(" ", "");
+
+                // display the encrypted result without spaces on the first line
+                resultTextArea.setText(encryptedResult.replace(" ", "") + "\n");
+                resultTextArea.append("\n"); // add a new line
+
+                // group the result based on the string length of the encryption key
+                int keyLength = key.length();
+                StringBuilder groupedResult = new StringBuilder();
+                int charCount = 0;
+
+                for (char c : encryptedResult.toCharArray()) {
+                    groupedResult.append(c);
+                    charCount++;
+
+                    // insert a space after each group of characters equal to the key length
+                    if (charCount == keyLength) {
+                        groupedResult.append(" ");
+                        charCount = 0;
+                    }
+                }
+
+                // if the last group is lacking characters, insert '0' to complete it
+                while (charCount != 0 && charCount < keyLength) {
+                    groupedResult.append("0");
+                    charCount++;
+                }
+
+                resultTextArea.append(groupedResult.toString().trim());
+                resultTextArea.append("\n"); // add a new line
+
+
+
+
             }
         });
 
@@ -204,4 +265,15 @@ public class Menu {
         frame.revalidate();
         frame.repaint();
     }
+
+    // Helper method to reverse and append characters in a StringBuilder
+    private static void reverseAndAppend(StringBuilder sb) {
+        int length = sb.length();
+        for (int i = length - 1; i >= 0; i--) {
+            resultTextArea.append(String.valueOf(sb.charAt(i)));  // Convert char to String
+        }
+        sb.setLength(0); // Clear the StringBuilder for the next group
+    }
+
+
 }
