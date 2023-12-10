@@ -9,7 +9,7 @@ public class Menu {
     public static void main(String[] args) {
         final JFrame frame = new JFrame("Menu");
 
-        frame.setSize(800, 400);
+        frame.setSize(600, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JMenuBar menuBar = new JMenuBar();
@@ -60,6 +60,7 @@ public class Menu {
 
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        frame.setResizable(false);
     }
 
     private static void showSettingsDialog(JFrame frame) {
