@@ -107,7 +107,6 @@ public class Menu {
         }
     }
 
-
     private static void showEncryptionPanel(JFrame frame) {
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -127,8 +126,8 @@ public class Menu {
             }
         });
 
-       resultTextArea = new JTextArea(10, 20);
-       resultTextArea.setEditable(false);
+        resultTextArea = new JTextArea(10, 20);
+        resultTextArea.setEditable(false);
 
         JTextField encryptionKeyField = new JTextField(20);
         encryptionKeyField.addKeyListener(new KeyAdapter() {
@@ -154,12 +153,19 @@ public class Menu {
                     JOptionPane.showMessageDialog(frame, "Please enter an encryption key.");
                     return;
                 }*/
-
+                String tempMessage = messageTextArea.getText();
+                int tempLength = tempMessage.length();
                 // check if the entered key matches the saved key
                 if (savedKey.isBlank()) {
                     JOptionPane.showMessageDialog(frame, "Encryption key is empty. Please check your settings.");
                     return;
-                } else if (!encryptionKeyField.getText().equals(savedKey)) {
+
+                } else if (tempLength < savedKey.length()) {
+                    JOptionPane.showMessageDialog(frame, "Message cannot be shorter than key");
+                    return;
+                }
+
+                else if (!encryptionKeyField.getText().equals(savedKey)) {
                     JOptionPane.showMessageDialog(frame, "Incorrect encryption key. Please check your settings.");
                     return;
                 }
@@ -178,8 +184,7 @@ public class Menu {
                         char keyChar = key.charAt(i);
 
                         if (Character.isLetter(keyChar)) {
-                            int charValue = Character.toUpperCase(keyChar) - 'A' + 1;
-                            int digit = charValue;
+                            int digit = Character.toUpperCase(keyChar) - 'A' + 1;
 
                             // Temporary list to store digits in reverse order
                             List<Integer> tempKeyList = new ArrayList<>();
@@ -195,14 +200,14 @@ public class Menu {
                             // System.out.println(keyList); //print code to check keylist
 
                             //keyList.add(charValue);
-                        } else if (Character.isDigit(keyChar)) { //placeholder code for how to handle numbers in the key
+                        } /* else if (Character.isDigit(keyChar)) { //placeholder code for how to handle numbers in the key
                             int digit = Character.getNumericValue(keyChar);
                             // Split multi-digit numbers into separate digits
                             while (digit > 0) {
                                 keyList.add(digit % 10);
                                 digit /= 10;
                             }
-                        }
+                        } */
                     }
 
                     // Convert the list to an array
@@ -226,10 +231,10 @@ public class Menu {
                             encryptedMessage.append(encryptedChar);
 
                             keyIndex++;
-                        } else {
+                        } /* else {
                             // Non-alphabetic characters remain unchanged (placeholder)
                             encryptedMessage.append(currentChar);
-                        }
+                        } */
                     }
 
 
@@ -311,7 +316,6 @@ public class Menu {
         // Set the layout constraints for resizing and padding
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
         gbc.insets = new Insets(10, 20, 0, 5); // Set padding (top, left, bottom, right)
 
         // Add components to the main panel
@@ -332,7 +336,7 @@ public class Menu {
         gbc.gridheight = 1;
         gbc.gridwidth = 1;
         gbc.weighty= 0.0;
-        mainPanel.add(new JLabel("Decryption Key"), gbc);
+        mainPanel.add(new JLabel("Encryption Key"), gbc);
 
         gbc.gridy++;
         mainPanel.add(encryptionKeyField, gbc);
@@ -371,10 +375,10 @@ public class Menu {
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
                 if (c == ' ') {
-                    // Ignore non-letter characters
+                    // allow space
                 }
                 else if (!Character.isLetter(c)) {
-                    e.consume();
+                    e.consume(); // Ignore non-letter characters
                 }
             }
         });
@@ -407,12 +411,17 @@ public class Menu {
                     JOptionPane.showMessageDialog(frame, "Please enter an encryption key.");
                     return;
                 }*/
+                String tempMessage = messageTextArea.getText();
+                int tempLength = tempMessage.length();
 
                 // check if the entered key matches the saved key or is empty
                 if (savedKey.isBlank()) {
                     JOptionPane.showMessageDialog(frame, "Decryption key is empty. Please check your settings.");
                     return;
-                } else if (!decryptionKeyField.getText().equals(savedKey)) {
+                } else if (tempLength < savedKey.length()) {
+                    JOptionPane.showMessageDialog(frame, "Message cannot be shorter than key");
+                    return;
+                }else if (!decryptionKeyField.getText().equals(savedKey)) {
                     JOptionPane.showMessageDialog(frame, "Incorrect decryption key. Please check your settings.");
                     return;
                 }
@@ -431,8 +440,7 @@ public class Menu {
                         char keyChar = key.charAt(i);
 
                         if (Character.isLetter(keyChar)) {
-                            int charValue = Character.toUpperCase(keyChar) - 'A' + 1;
-                            int digit = charValue;
+                            int digit = Character.toUpperCase(keyChar) - 'A' + 1;
 
                             // Temporary list to store digits in reverse order
                             List<Integer> tempKeyList = new ArrayList<>();
@@ -445,17 +453,18 @@ public class Menu {
 
                             // Add digits to the main keyList in the correct order
                             keyList.addAll(tempKeyList);
+
                             // System.out.println(keyList); //print code to check keylist
 
                             //keyList.add(charValue);
-                        } else if (Character.isDigit(keyChar)) { //placeholder code for how to handle numbers in the key
+                        } /* else if (Character.isDigit(keyChar)) { //placeholder code for how to handle numbers in the key
                             int digit = Character.getNumericValue(keyChar);
                             // Split multi-digit numbers into separate digits
                             while (digit > 0) {
                                 keyList.add(digit % 10);
                                 digit /= 10;
                             }
-                        }
+                        } */
                     }
 
                     // Convert the list to an array
@@ -508,10 +517,10 @@ public class Menu {
                             decryptedMessage.append(decryptedChar);
 
                             keyIndex++;
-                        } else {
+                        } /* else {
                             // Non-alphabetic characters remain unchanged (placeholder)
                             decryptedMessage.append(currentChar);
-                        }
+                        } */
                     }
 
                     String decryptedFinal = decryptedMessage.toString().replaceAll("0*$", "");
@@ -549,7 +558,6 @@ public class Menu {
         // Set the layout constraints for resizing and padding
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
         gbc.insets = new Insets(10, 20, 0, 5); // Set padding (top, left, bottom, right)
 
         // Add components to the main panel
