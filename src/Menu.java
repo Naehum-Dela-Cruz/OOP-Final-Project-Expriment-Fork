@@ -129,7 +129,7 @@ public class Menu {
         resultTextArea = new JTextArea(10, 20);
         resultTextArea.setEditable(false);
 
-        JTextField encryptionKeyField = new JTextField(20);
+        JTextField encryptionKeyField = new JTextField(userKey,20);
         encryptionKeyField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -292,26 +292,8 @@ public class Menu {
         });
 
         // disable the encrypt button initially
-        encryptButton.setEnabled(false);
-
-        // add a document listener to enable the encrypt button when the encryption key is entered
-        encryptionKeyField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                encryptButton.setEnabled(true);
-            }
-
-            @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                encryptButton.setEnabled(!encryptionKeyField.getText().isEmpty());
-            }
-
-            @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                // Plain text components do not fire these events
-            }
-        });
-
+        // removed as event catcher makes this redundant
+        encryptButton.setEnabled(true);
 
         // Set the layout constraints for resizing and padding
         gbc.fill = GridBagConstraints.BOTH;
@@ -385,7 +367,7 @@ public class Menu {
 
         resultTextArea = new JTextArea(10, 20);
         resultTextArea.setEditable(false);
-        JTextField decryptionKeyField = new JTextField(20);
+        JTextField decryptionKeyField = new JTextField(userKey,20);
         decryptionKeyField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -534,25 +516,8 @@ public class Menu {
         });
 
         // disable the encrypt button initially
-        decryptButton.setEnabled(false);
-
-        // add a document listener to enable the encrypt button when the encryption key is entered
-        decryptionKeyField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                decryptButton.setEnabled(true);
-            }
-
-            @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                decryptButton.setEnabled(!decryptionKeyField.getText().isEmpty());
-            }
-
-            @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                // Plain text components do not fire these events
-            }
-        });
+        // removed as event catcher makes this redundant
+        decryptButton.setEnabled(true);
 
 
         // Set the layout constraints for resizing and padding
